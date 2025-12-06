@@ -23,3 +23,6 @@ schema:
   password: password?
   autoplay: bool
   initial_volume: match(^([0-9]|[1-9][0-9]|100)$)?
+  enable_volume_normalisation: bool?
+  enable_cache: bool
+  credentials_json: str?
