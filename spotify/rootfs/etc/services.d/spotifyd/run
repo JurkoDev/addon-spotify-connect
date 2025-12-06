@@ -10,19 +10,28 @@ declare password
 declare username
 declare autoplay
 declare initial_volume
+declare enable_volume_normalisation
+declare enable_cache
 
 bashio::log.info 'Starting the Spotify daemon...'
 
 # Bitrate
 options+=(--bitrate $(bashio::config 'bitrate'))
 
-# Initial Volume
-initial_volume=$(bashio::config 'initial_volume')
-options+=(--initial-volume "$initial_volume")
-
 # Device name
 name=$(bashio::config 'name')
 options+=(--name "${name}")
+
+# to provide alternate way to do oauth
+if bashio::config.exists 'credentials_json' && bashio::config 'enable_cache'; then
+  mkdir -p /data/cache
+  echo "$(bashio::config 'credentials_json')" > /data/cache/credentials.json
+fi
+
+# Cache so oauth is stored
+if bashio::config 'enable_cache'; then
+  options+=(--cache "/data/cache")
+fi
 
 # Username / password
 if bashio::config.has_value 'username'; then
@@ -40,6 +49,16 @@ if bashio::config.true 'autoplay'; then
   options+=(--autoplay on)
 fi
 
+# Initial volume
+if bashio::config.has_value 'initial_volume'; then
+  options+=(--initial-volume "$(bashio::config 'initial_volume')")
+fi
+
+# Volume Normalisation
+if bashio::config.true 'enable_volume_normalisation'; then
+  options+=(--enable-volume-normalisation)
+fi
+
 # Save writes
 options+=(--disable-audio-cache)
 
@@ -48,7 +67,7 @@ if bashio::debug; then
   options+=(--verbose)
 fi
 
-# enable oauth you need debug to get the link
+# enable oauth
 options+=(--enable-oauth)
 
 # Run librespot
